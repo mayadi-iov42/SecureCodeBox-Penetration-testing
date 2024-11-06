@@ -61,7 +61,7 @@ jobs:
         run: |
           kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9001
           # Extract the finding download link from the scan
-          finding_link=$(kubectl get scan -l organization=OWASP -o yaml | grep "findingDownloadLink:" | awk '{print $2}' | tail -n +2)
+          finding_link=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o yaml | grep "findingDownloadLink:" | awk '{print $2}' | tail -n +2)
 
           # Display the extracted link (for debugging purposes)
           echo "Finding Download Link: $finding_link"
