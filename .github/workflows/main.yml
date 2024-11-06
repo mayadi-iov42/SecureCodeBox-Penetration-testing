@@ -85,7 +85,7 @@ jobs:
           sleep 5
 
           # Extract the finding download link from the scan
-          finding_link=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o yaml | grep "findingDownloadLink:" | awk '{print $2}' | tail -n +2)
+          finding_link=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findingDownloadLink}')
 
           # Display the extracted link (for debugging purposes)
           echo "Finding Download Link: $finding_link"
