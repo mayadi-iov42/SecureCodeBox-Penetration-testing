@@ -44,9 +44,12 @@ jobs:
           helm upgrade --install zap-advanced oci://ghcr.io/securecodebox/helm/zap-advanced -n securecodebox-system
 
       # Step 7: Initiate ZAP Scan on the Juice-Shop target
-      - name: Run ZAP Scan
+      - name: Download scan.yaml
         run: |
-          kubectl apply -f https://github.com/GHARBIyasmine/SecureCodeBox-Penetration-testing/blob/main/scan.yaml
+          curl -O https://raw.githubusercontent.com/GHARBIyasmine/SecureCodeBox-Penetration-testing/main/scan.yaml
+
+      - name: Apply scan.yaml
+        run: kubectl apply -f scan.yaml
 
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
