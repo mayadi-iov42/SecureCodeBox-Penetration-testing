@@ -90,8 +90,14 @@ jobs:
           # Display the extracted link (for debugging purposes)
           echo "Finding Download Link: $finding_link"
 
-          # You can use this link in subsequent steps (for example, to download the findings file)
-          curl -o findings.json "$finding_link"
+          # Replace the service hostname with 'localhost' in the finding link
+          updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
+      
+          # Debug: Print the updated finding link
+          echo "Updated Finding Link: $updated_link"
+      
+          # Use the updated link to download the findings
+          curl -o findings.json "$updated_link"
 
       - name: Upload findings.json artifact
         uses: actions/upload-artifact@v3
