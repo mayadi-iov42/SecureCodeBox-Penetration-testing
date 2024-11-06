@@ -46,7 +46,7 @@ jobs:
       # Step 7: Initiate ZAP Scan on the Juice-Shop target
       - name: Run ZAP Scan
         run: |
-          kubectl apply -f scan.yaml
+          kubectl apply -f https://github.com/GHARBIyasmine/SecureCodeBox-Penetration-testing/blob/main/scan.yaml
 
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
