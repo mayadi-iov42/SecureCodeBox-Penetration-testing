@@ -36,12 +36,12 @@ jobs:
     # Step 5: Deploy Juice-Shop demo target
       - name: Deploy Juice-Shop Demo Target
         run: |
-          helm upgrade --install juice-shop oci://ghcr.io/securecodebox/helm/juice-shop -n securecodebox-system
+          helm upgrade --install juice-shop oci://ghcr.io/securecodebox/helm/juice-shop 
 
       # Step 6: Deploy ZAP-Advanced scanner
       - name: Deploy ZAP-Advanced Scanner
         run: |
-          helm upgrade --install zap-advanced oci://ghcr.io/securecodebox/helm/zap-advanced -n securecodebox-system
+          helm upgrade --install zap-advanced oci://ghcr.io/securecodebox/helm/zap-advanced 
 
       # Step 7: Initiate ZAP Scan on the Juice-Shop target
       - name: Download scan.yaml
@@ -54,7 +54,7 @@ jobs:
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
         run: |
-          kubectl wait --for=condition=complete job -l organization=OWASP --timeout=900s 
+          kubectl wait --for=condition=Done scan/zap-authenticated-full-scan-juiceshop --timeout=900s 
 
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
