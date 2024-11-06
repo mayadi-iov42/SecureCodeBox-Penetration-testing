@@ -55,8 +55,26 @@ jobs:
       - name: Wait for ZAP Scan Results
         run: |
           # Start watch mode for kubectl get scan
-          kubectl get scan zap-authenticated-full-scan-juiceshop -o wide --watch &
-          kubectl wait --for=condition=Done scan/zap-authenticated-full-scan-juiceshop --timeout=1800s 
+          #kubectl get scan zap-authenticated-full-scan-juiceshop -o wide --watch &
+          #kubectl wait --for=condition=Done scan/zap-authenticated-full-scan-juiceshop --timeout=1800s
+          # Continuously check scan status and print it
+          # Poll for the scan state to become "Done"
+          while true; do
+            # Fetch the scan status and check for "Done" state
+            scan_state=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o yaml | grep "state:" | awk '{print $2}' | tail -n +2)
+      
+            # Print the current scan state for debugging
+            echo "Current scan state: $scan_state"
+      
+            # Break out of loop if scan is done
+            if [[ "$scan_state" == "Done" ]]; then
+              echo "Scan completed!"
+              break
+            fi
+      
+            # Wait 30 seconds before checking again
+            sleep 30
+          done
 
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
