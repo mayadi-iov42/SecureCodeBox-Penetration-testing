@@ -79,7 +79,11 @@ jobs:
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
         run: |
-          kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9001
+          kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9001 &
+      
+          # Give it a few seconds to ensure the port-forwarding is active
+          sleep 5
+
           # Extract the finding download link from the scan
           finding_link=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o yaml | grep "findingDownloadLink:" | awk '{print $2}' | tail -n +2)
 
