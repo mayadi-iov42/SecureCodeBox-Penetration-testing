@@ -1,0 +1,66 @@
+name: SecureCodeBox Penetration Tests
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  penetration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Set up Kubernetes Kind cluster
+      - name: Set up kind cluster
+        uses: engineerd/setup-kind@v0.6.0
+        with:
+          version: v0.24.0
+
+      # Step 2: Configure kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.27.1
+
+      # Step 3: Install Helm for SecureCodeBox operator installation
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.8.0
+
+      # Step 4: Deploy SecureCodeBox Operator using Helm from the OCI registry
+      - name: Deploy SecureCodeBox
+        run: |
+          helm --namespace securecodebox-system upgrade --install --create-namespace securecodebox-operator oci://ghcr.io/securecodebox/helm/operator
+
+    # Step 5: Deploy Juice-Shop demo target
+      - name: Deploy Juice-Shop Demo Target
+        run: |
+          helm upgrade --install juice-shop oci://ghcr.io/securecodebox/helm/juice-shop -n securecodebox-system
+
+      # Step 6: Deploy ZAP-Advanced scanner
+      - name: Deploy ZAP-Advanced Scanner
+        run: |
+          helm upgrade --install zap-advanced oci://ghcr.io/securecodebox/helm/zap-advanced -n securecodebox-system
+
+      # Step 7: Initiate ZAP Scan on the Juice-Shop target
+      - name: Run ZAP Scan
+        run: |
+          kubectl apply -f scan.yaml
+
+      # Step 8: Wait for ZAP Scan Completion
+      - name: Wait for ZAP Scan Results
+        run: |
+          kubectl wait --for=condition=complete job/zap-scan --timeout=900s -n securecodebox-system
+
+      # Step 9: Retrieve and save the ZAP scan results
+      - name: Retrieve ZAP Scan Results
+        run: |
+          kubectl logs job/zap-scan -n securecodebox-system > zap-scan-results.txt
+          cat zap-scan-results.txt
+
+      - name: Save ZAP Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-penetration-test-results
+          path: zap-scan-results.txt
