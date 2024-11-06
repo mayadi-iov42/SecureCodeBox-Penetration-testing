@@ -54,7 +54,7 @@ jobs:
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
         run: |
-          kubectl wait --for=condition=complete job -l organization=OWASP --timeout=900s -n securecodebox-system
+          kubectl wait --for=condition=complete job -l organization=OWASP --timeout=900s 
 
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
