@@ -14,7 +14,7 @@ jobs:
       - name: Set up kind cluster
         uses: engineerd/setup-kind@v0.6.0
         with:
-          version: v0.24.0
+          version: "v0.24.0"
 
       # Step 2: Configure kubectl
       - name: Set up kubectl
