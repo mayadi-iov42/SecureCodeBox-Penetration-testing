@@ -54,16 +54,23 @@ jobs:
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
         run: |
-          kubectl wait --for=condition=complete job/zap-scan --timeout=900s -n securecodebox-system
+          kubectl wait --for=condition=complete job -l organization=OWASP --timeout=900s -n securecodebox-system
 
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
         run: |
-          kubectl logs job/zap-scan -n securecodebox-system > zap-scan-results.txt
-          cat zap-scan-results.txt
+          kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9001
+          # Extract the finding download link from the scan
+          finding_link=$(kubectl get scan -l organization=OWASP -o yaml | grep "findingDownloadLink:" | awk '{print $2}' | tail -n +2)
 
-      - name: Save ZAP Test Results
+          # Display the extracted link (for debugging purposes)
+          echo "Finding Download Link: $finding_link"
+
+          # You can use this link in subsequent steps (for example, to download the findings file)
+          curl -o findings.json "$finding_link"
+
+      - name: Upload findings.json artifact
         uses: actions/upload-artifact@v3
         with:
-          name: zap-penetration-test-results
-          path: zap-scan-results.txt
+          name: findings.json
+          path: findings.json
