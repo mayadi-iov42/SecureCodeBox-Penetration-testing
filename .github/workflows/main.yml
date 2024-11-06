@@ -61,7 +61,7 @@ jobs:
           # Poll for the scan state to become "Done"
           while true; do
             # Fetch the scan status and check for "Done" state
-            scan_state=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o yaml | grep "state:" | awk '{print $2}' | tail -n +2)
+            scan_state=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.state}')
       
             # Print the current scan state for debugging
             echo "Current scan state: $scan_state"
