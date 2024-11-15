@@ -97,7 +97,7 @@ jobs:
           echo "Updated Finding Link: $updated_link"
       
           # Use the updated link to download the findings
-          curl -o findings.json "$updated_link"
+          wget -O findings.json "$updated_link"
 
       - name: Upload findings.json artifact
         uses: actions/upload-artifact@v3
