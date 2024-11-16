@@ -93,10 +93,10 @@ jobs:
           mc alias set local http://localhost:9000 admin password
           
           # Extract the scan uid from the scan
-          scan-uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
+          scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
 
           # Display the extracted link (for debugging purposes)
-          echo "scan uid: $scan-uid"
+          echo "scan uid: $scan_uid"
 
           # # Replace the service hostname with 'localhost' in the finding link
           # updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
@@ -105,7 +105,7 @@ jobs:
           # echo "Updated Finding Link: $updated_link"
       
           # Use the updated link to download the findings
-          mc cp local/securecodebox/scan-${scan-uid}/findings.json findings.json
+          mc cp local/securecodebox/scan-${scan_uid}/findings.json findings.json
 
       - name: Upload findings.json artifact
         uses: actions/upload-artifact@v3
