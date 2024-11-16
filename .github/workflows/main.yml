@@ -83,21 +83,29 @@ jobs:
       
           # Give it a few seconds to ensure the port-forwarding is active
           sleep 5
+          
+          # download the minio client 
+          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          sudo mv mc /usr/local/bin
 
-          # Extract the finding download link from the scan
-          finding_link=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findingDownloadLink}')
+          # set up minio client 
+          mc alias set local http://localhost:9000 admin password
+          
+          # Extract the scan uid from the scan
+          scan-uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
 
           # Display the extracted link (for debugging purposes)
-          echo "Finding Download Link: $finding_link"
+          echo "scan uid: $scan-uid"
 
-          # Replace the service hostname with 'localhost' in the finding link
-          updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
+          # # Replace the service hostname with 'localhost' in the finding link
+          # updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
       
-          # Debug: Print the updated finding link
-          echo "Updated Finding Link: $updated_link"
+          # # Debug: Print the updated finding link
+          # echo "Updated Finding Link: $updated_link"
       
           # Use the updated link to download the findings
-          wget -O findings.json "$updated_link"
+          mc cp local/securecodebox/scan-${scan-uid}/findings.json findings.json
 
       - name: Upload findings.json artifact
         uses: actions/upload-artifact@v3
