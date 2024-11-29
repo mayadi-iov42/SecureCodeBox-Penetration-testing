@@ -98,9 +98,14 @@ jobs:
           scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
           # Extract scan findings 
           scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
+          scan_findings_categories=$(echo "$scan_findings_categories" | tr -d '\n')
+
           # Extract count 
           scan_findings_count=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.count}')
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
+
+          echo "Categories: ${scan_findings_categories}"
+          echo "Count: ${scan_findings_count}"
 
           summary_file="report-summary-${scan_uid}.json"
           echo "{
