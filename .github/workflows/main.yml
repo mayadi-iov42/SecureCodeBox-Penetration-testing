@@ -112,8 +112,9 @@ jobs:
             \"scan_name\": \"${scan_name}\",
             \"scan_uid\": \"${scan_uid}\",
             \"findings\": {
-              \"categories"\: ${scan_findings_categories},
-              \"count"\: ${scan_findings_count}
+              \"count"\: ${scan_findings_count},
+              \"categories"\: ${scan_findings_categories}
+              
             }
           }" > ${summary_file}
       
