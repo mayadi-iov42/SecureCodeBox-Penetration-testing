@@ -94,9 +94,24 @@ jobs:
           
           # Extract the scan uid from the scan
           scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
+          # Extract scan name 
+          scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
+          # Extract scan findings 
+          scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
+          # Extract count 
+          scan_findings_count=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.count}')
 
-          # Display the extracted link (for debugging purposes)
-          echo "scan uid: $scan_uid"
+          summary_file="report-summary-${scan_uid}.json"
+          echo "{
+            \"scan_name\": \"${scan_name}\",
+            \"scan_uid\": \"${scan_uid}\",
+            \"findings\": {
+              \"categories"\: ${scan_findings_categories},
+              \"count"\: ${scan_findings_count}
+            }
+          }" > ${summary_file}
+      
+          echo "Report created: ${summary_file}"
 
           # # Replace the service hostname with 'localhost' in the finding link
           # updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
@@ -107,8 +122,10 @@ jobs:
           # Use the updated link to download the findings
           mc cp local/securecodebox/scan-${scan_uid}/findings.json findings.json
 
-      - name: Upload findings.json artifact
+      - name: Upload findings.json and report-summary artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: findings.json
-          path: findings.json
+          name: findings-and-reports
+          path: |
+            findings.json
+            report-summary-*.json
