@@ -136,6 +136,9 @@ jobs:
           path: |
             findings.json
             report-summary-*.json
+            
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Configure Git
         run: |
