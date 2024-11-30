@@ -136,3 +136,16 @@ jobs:
           path: |
             findings.json
             report-summary-*.json
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push files
+        run: |
+          git add findings.json report-summary-*.json
+          git commit -m "Add findings and report summaries [skip ci]" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
