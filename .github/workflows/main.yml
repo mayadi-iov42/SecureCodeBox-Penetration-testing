@@ -95,6 +95,8 @@ jobs:
           mc alias set local http://localhost:9000 admin password
 
           scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
+          echo "SCAN_UID=${scan_uid}" >> $GITHUB_ENV
+          
           scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
           scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
           scan_findings_categories=$(echo "$scan_findings_categories" | tr -d '\n')
@@ -135,8 +137,9 @@ jobs:
           fi
 
           echo "Baseline found. Proceeding with comparison."
+          
 
-          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary-${scan_uid}.json"
+          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary-${SCAN_UID}.json"
           BASELINE_CATEGORIES=$(jq -r '.findings.categories' "$BASELINE_REPORT")
           CURRENT_CATEGORIES=$(jq -r '.findings.categories' "$CURRENT_REPORT")
 
