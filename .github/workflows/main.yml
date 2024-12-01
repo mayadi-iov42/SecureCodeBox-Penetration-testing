@@ -75,6 +75,9 @@ jobs:
             # Wait 30 seconds before checking again
             sleep 30
           done
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
           
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -83,34 +86,32 @@ jobs:
       - name: Retrieve ZAP Scan Results
         run: |
           kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9000 &
-      
-          # Give it a few seconds to ensure the port-forwarding is active
           sleep 5
-          
-          # download the minio client 
+
           curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
           chmod +x mc
           sudo mv mc /usr/local/bin
 
-          # set up minio client 
           mc alias set local http://localhost:9000 admin password
-          
-          # Extract the scan uid from the scan
+
           scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
-          # Extract scan name 
           scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
-          # Extract scan findings 
           scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
           scan_findings_categories=$(echo "$scan_findings_categories" | tr -d '\n')
 
-          # Extract count 
           scan_findings_count=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.count}')
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
 
           echo "Categories: ${scan_findings_categories}"
           echo "Count: ${scan_findings_count}"
 
-          # summary_file="report-summary-${scan_uid}.json"
+          # Check if findings count is zero
+          if [[ "$scan_findings_count" -eq 0 ]]; then
+            echo "No issues found. Pipeline passes."
+            exit 0
+          fi
+
+          # Create summary file and findings file
           summary_file="$GITHUB_WORKSPACE/report-summary-${scan_uid}.json"
           echo "{
             \"scan_name\": \"${scan_name}\",
@@ -118,30 +119,51 @@ jobs:
             \"findings\": {
               \"count\": ${scan_findings_count},
               \"categories\": ${scan_findings_categories}
-              
             }
           }" > ${summary_file}
-      
-          echo "Report created: ${summary_file}"
-
-          # # Replace the service hostname with 'localhost' in the finding link
-          # updated_link=$(echo "$finding_link" | sed 's|securecodebox-operator-minio.securecodebox-system.svc.cluster.local|localhost|')
-      
-          # # Debug: Print the updated finding link
-          # echo "Updated Finding Link: $updated_link"
-      
-          # Use the updated link to download the findings
-          # mc cp local/securecodebox/scan-${scan_uid}/findings.json findings.json
           mc cp local/securecodebox/scan-${scan_uid}/findings.json $GITHUB_WORKSPACE/findings.json
+          echo "Reports saved locally."
 
+      # Step 3: Check for Baseline and Compare Reports
+      - name: Check Baseline and Compare
+        run: |
+          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary.*\.json$' | head -n 1)
 
-      # - name: Upload findings.json and report-summary artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: findings-and-reports
-      #     path: |
-      #       findings.json
-      #       report-summary-*.json
+          if [[ -z "$BASELINE_REPORT" ]]; then
+            echo "::warning::No baseline report found. New issues detected."
+            exit 1
+          fi
+
+          echo "Baseline found. Proceeding with comparison."
+
+          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary-${scan_uid}.json"
+          BASELINE_CATEGORIES=$(jq -r '.findings.categories' "$BASELINE_REPORT")
+          CURRENT_CATEGORIES=$(jq -r '.findings.categories' "$CURRENT_REPORT")
+
+          echo "Baseline Categories: $BASELINE_CATEGORIES"
+          echo "Current Categories: $CURRENT_CATEGORIES"
+
+          for category in $(echo "$CURRENT_CATEGORIES" | jq -r '.[]'); do
+            if [[ ! $(echo "$BASELINE_CATEGORIES" | jq -r ".[]" | grep -w "$category") ]]; then
+              echo "::warning::New category detected: $category"
+            else
+              BASELINE_COUNT=$(jq -r ".findings.categories | .[\"$category\"]" "$BASELINE_REPORT")
+              CURRENT_COUNT=$(jq -r ".findings.categories | .[\"$category\"]" "$CURRENT_REPORT")
+              if [[ "$CURRENT_COUNT" -gt "$BASELINE_COUNT" ]]; then
+                echo "::warning::Category '$category' count increased from $BASELINE_COUNT to $CURRENT_COUNT."
+              elif [[ "$CURRENT_COUNT" -lt "$BASELINE_COUNT" ]]; then
+                echo "Category '$category' count decreased from $BASELINE_COUNT to $CURRENT_COUNT. Improvement noted."
+              else
+                echo "Category '$category' count remains the same: $CURRENT_COUNT. Persistent issue."
+              fi
+            fi
+          done
+
+          for baseline_category in $(echo "$BASELINE_CATEGORIES" | jq -r '.[]'); do
+            if [[ ! $(echo "$CURRENT_CATEGORIES" | jq -r ".[]" | grep -w "$baseline_category") ]]; then
+              echo "Category '$baseline_category' is no longer present. Improvement noted."
+            fi
+          done
 
       - name: Configure Git
         run: |
@@ -156,10 +178,12 @@ jobs:
       - name: Debug file paths
         run: ls -al $GITHUB_WORKSPACE/
 
-      - name: Commit and push files
+      - name: Save Reports and Fail Pipeline
         run: |
           git add findings.json report-summary-*.json
-          git commit -m "Add findings and report summaries [skip ci]" || echo "No changes to commit"
+          git commit -m "Update findings and report summaries [skip ci]" || echo "No changes to commit"
           git push
+          echo "::error::Pipeline failed due to new issues."
+          exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
