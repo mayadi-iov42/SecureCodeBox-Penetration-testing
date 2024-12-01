@@ -127,7 +127,7 @@ jobs:
       # Step 3: Check for Baseline and Compare Reports
       - name: Check Baseline and Compare
         run: |
-          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary.*\.json$' | head -n 1)
+          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary-.*\.json$' | head -n 1)
 
           if [[ -z "$BASELINE_REPORT" ]]; then
             echo "::warning::No baseline report found. New issues detected."
