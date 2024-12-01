@@ -145,6 +145,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Move files to repo root
+        run: |
+          mv findings.json $GITHUB_WORKSPACE/
+          mv report-summary-*.json $GITHUB_WORKSPACE/
+
+      - name: Debug file paths
+        run: ls -al $GITHUB_WORKSPACE/
+
       - name: Commit and push files
         run: |
           git add findings.json report-summary-*.json
