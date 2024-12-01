@@ -95,7 +95,7 @@ jobs:
           mc alias set local http://localhost:9000 admin password
 
           scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
-          echo "SCAN_UID=${scan_uid}" >> $GITHUB_ENV
+          # echo "SCAN_UID=${scan_uid}" >> $GITHUB_ENV
           
           scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
           scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
@@ -114,7 +114,7 @@ jobs:
           fi
 
           # Create summary file and findings file
-          summary_file="$GITHUB_WORKSPACE/report-summary-${scan_uid}.json"
+          summary_file="$GITHUB_WORKSPACE/report-summary.json"
           echo "{
             \"scan_name\": \"${scan_name}\",
             \"scan_uid\": \"${scan_uid}\",
@@ -129,7 +129,7 @@ jobs:
       # Step 3: Check for Baseline and Compare Reports
       - name: Check Baseline and Compare
         run: |
-          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary-.*\.json$' | head -n 1)
+          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary.*\.json$' | head -n 1)
 
           if [[ -z "$BASELINE_REPORT" ]]; then
             echo "::warning::No baseline report found. New issues detected."
@@ -139,7 +139,7 @@ jobs:
           echo "Baseline found. Proceeding with comparison."
           
 
-          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary-${SCAN_UID}.json"
+          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary.json"
           BASELINE_CATEGORIES=$(jq -r '.findings.categories' "$BASELINE_REPORT")
           CURRENT_CATEGORIES=$(jq -r '.findings.categories' "$CURRENT_REPORT")
 
