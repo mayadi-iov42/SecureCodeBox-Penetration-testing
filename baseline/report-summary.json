@@ -3,6 +3,6 @@
   "scan_uid": "b89da8e1-a8de-4751-982e-c4cee009ea38",
   "findings": {
     "count": 13,
-    "categories": {"Application Error Disclosure":1,"Authentication Request Identified":1,"Cloud Metadata Potentially Exposed":1,"Content Security Policy (CSP) Header Not Set":1,"Cross-Domain JavaScript Source File Inclusion":1,"Cross-Domain Misconfiguration":1,"Information Disclosure - Suspicious Comments":1,"Modern Web Application":1,"Private IP Disclosure":1,"SQL Injection - SQLite":1,"Session Management Response Identified":1,"Timestamp Disclosure - Unix":1,"User Agent Fuzzer":1}
+    "categories": {"somehting category":1,"Application Error Disclosure":1,"Authentication Request Identified":1,"Cloud Metadata Potentially Exposed":1,"Content Security Policy (CSP) Header Not Set":1,"Cross-Domain JavaScript Source File Inclusion":1,"Cross-Domain Misconfiguration":1,"Information Disclosure - Suspicious Comments":1,"Modern Web Application":1,"Private IP Disclosure":1,"SQL Injection - SQLite":1,"Session Management Response Identified":1,"Timestamp Disclosure - Unix":1,"User Agent Fuzzer":1}
   }
 }
