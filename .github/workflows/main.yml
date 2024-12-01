@@ -169,7 +169,8 @@ jobs:
           echo "Baseline Categories: $BASELINE_CATEGORIES"
           echo "Current Categories: $CURRENT_CATEGORIES"
 
-          for category in $CURRENT_CATEGORIES; do
+          # Loop through current categories
+          while IFS= read -r category; do
             if [[ ! "$BASELINE_CATEGORIES" =~ $category ]]; then
               echo "::warning::New category detected: $category"
             else
@@ -183,13 +184,14 @@ jobs:
                 echo "Category '$category' count remains the same: $CURRENT_COUNT. Persistent issue."
               fi
             fi
-          done
-
-          for baseline_category in $BASELINE_CATEGORIES; do
+          done < <(echo "$CURRENT_CATEGORIES")
+          
+          # Loop through baseline categories
+          while IFS= read -r baseline_category; do
             if [[ ! "$CURRENT_CATEGORIES" =~ $baseline_category ]]; then
               echo "Category '$baseline_category' is no longer present. Improvement noted."
             fi
-          done
+          done < <(echo "$BASELINE_CATEGORIES")
 
       
 
