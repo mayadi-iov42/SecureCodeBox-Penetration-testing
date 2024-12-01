@@ -160,8 +160,8 @@ jobs:
           BASELINE_REPORT="$GITHUB_WORKSPACE/baseline/report-summary.json"
           CURRENT_REPORT="$SUMMARY_FILE"
   
-          BASELINE_CATEGORIES=$(jq -r '.findings.categories' "$BASELINE_REPORT")
-          CURRENT_CATEGORIES=$(jq -r '.findings.categories' "$CURRENT_REPORT")
+          BASELINE_CATEGORIES=$(jq -r '.findings.categories | keys[]' "$BASELINE_REPORT")
+          CURRENT_CATEGORIES=$(jq -r '.findings.categories | keys[]' "$CURRENT_REPORT")
   
           echo "Baseline found. Proceeding with comparison."
           echo "Comparing $CURRENT_REPORT with $BASELINE_REPORT"
@@ -169,12 +169,12 @@ jobs:
           echo "Baseline Categories: $BASELINE_CATEGORIES"
           echo "Current Categories: $CURRENT_CATEGORIES"
 
-          for category in $(echo "$CURRENT_CATEGORIES" | jq -r '.[]'); do
-            if [[ ! $(echo "$BASELINE_CATEGORIES" | jq -r ".[]" | grep -w "$category") ]]; then
+          for category in $CURRENT_CATEGORIES; do
+            if [[ ! "$BASELINE_CATEGORIES" =~ $category ]]; then
               echo "::warning::New category detected: $category"
             else
-              BASELINE_COUNT=$(jq -r ".findings.categories | .[\"$category\"]" "$BASELINE_REPORT")
-              CURRENT_COUNT=$(jq -r ".findings.categories | .[\"$category\"]" "$CURRENT_REPORT")
+              BASELINE_COUNT=$(jq -r ".findings.categories[\"$category\"]" "$BASELINE_REPORT")
+              CURRENT_COUNT=$(jq -r ".findings.categories[\"$category\"]" "$CURRENT_REPORT")
               if [[ "$CURRENT_COUNT" -gt "$BASELINE_COUNT" ]]; then
                 echo "::warning::Category '$category' count increased from $BASELINE_COUNT to $CURRENT_COUNT."
               elif [[ "$CURRENT_COUNT" -lt "$BASELINE_COUNT" ]]; then
@@ -185,8 +185,8 @@ jobs:
             fi
           done
 
-          for baseline_category in $(echo "$BASELINE_CATEGORIES" | jq -r '.[]'); do
-            if [[ ! $(echo "$CURRENT_CATEGORIES" | jq -r ".[]" | grep -w "$baseline_category") ]]; then
+          for baseline_category in $BASELINE_CATEGORIES; do
+            if [[ ! "$CURRENT_CATEGORIES" =~ $baseline_category ]]; then
               echo "Category '$baseline_category' is no longer present. Improvement noted."
             fi
           done
