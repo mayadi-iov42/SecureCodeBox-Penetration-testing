@@ -128,6 +128,11 @@ jobs:
           mc cp local/securecodebox/scan-${scan_uid}/findings.json $GITHUB_WORKSPACE/findings.json
           
           echo "Reports saved locally."
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       # Step 2: Retrieve the Baseline Report
       - name: Retrieve Baseline Report
@@ -186,10 +191,7 @@ jobs:
             fi
           done
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
 
       # - name: Move files to repo root
       #   run: |
