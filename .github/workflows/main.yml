@@ -115,6 +115,7 @@ jobs:
 
           # Create summary file and findings file
           summary_file="$GITHUB_WORKSPACE/report-summary.json"
+          echo "SUMMARY_FILE=${summary_file}" >> $GITHUB_ENV
           echo "{
             \"scan_name\": \"${scan_name}\",
             \"scan_uid\": \"${scan_uid}\",
@@ -123,25 +124,42 @@ jobs:
               \"categories\": ${scan_findings_categories}
             }
           }" > ${summary_file}
+          
           mc cp local/securecodebox/scan-${scan_uid}/findings.json $GITHUB_WORKSPACE/findings.json
+          
           echo "Reports saved locally."
+
+      # Step 2: Retrieve the Baseline Report
+      - name: Retrieve Baseline Report
+        run: |
+          BASELINE_DIR="$GITHUB_WORKSPACE/baseline"
+          mkdir -p "$BASELINE_DIR"
+  
+          # Copy the baseline report from the repository to the temporary directory
+          git ls-files | grep '^report-summary\.json$' | xargs -I{} cp {} "$BASELINE_DIR/"
+  
+          BASELINE_REPORT="$BASELINE_DIR/report-summary.json"
+          if [[ ! -f "$BASELINE_REPORT" ]]; then
+            echo "::warning::No baseline report found. Skipping comparison. Treating as new issues."
+            mv "$SUMMARY_FILE" "$BASELINE_DIR/report-summary.json"
+            git add "$BASELINE_DIR/report-summary.json" findings.json
+            git commit -m "Set initial baseline report"
+            git push
+            exit 1
+          fi
+          echo "Baseline report located at: $BASELINE_REPORT"
 
       # Step 3: Check for Baseline and Compare Reports
       - name: Check Baseline and Compare
         run: |
-          BASELINE_REPORT=$(ls $GITHUB_WORKSPACE | grep '^report-summary.*\.json$' | head -n 1)
-
-          if [[ -z "$BASELINE_REPORT" ]]; then
-            echo "::warning::No baseline report found. New issues detected."
-            exit 1
-          fi
-
-          echo "Baseline found. Proceeding with comparison."
-          
-
-          CURRENT_REPORT="$GITHUB_WORKSPACE/report-summary.json"
+          BASELINE_REPORT="$GITHUB_WORKSPACE/baseline/report-summary.json"
+          CURRENT_REPORT="$SUMMARY_FILE"
+  
           BASELINE_CATEGORIES=$(jq -r '.findings.categories' "$BASELINE_REPORT")
           CURRENT_CATEGORIES=$(jq -r '.findings.categories' "$CURRENT_REPORT")
+  
+          echo "Baseline found. Proceeding with comparison."
+          echo "Comparing $CURRENT_REPORT with $BASELINE_REPORT"
 
           echo "Baseline Categories: $BASELINE_CATEGORIES"
           echo "Current Categories: $CURRENT_CATEGORIES"
@@ -183,7 +201,11 @@ jobs:
 
       - name: Save Reports and Fail Pipeline
         run: |
-          git add findings.json report-summary-*.json
+          BASELINE_REPORT="$GITHUB_WORKSPACE/baseline/report-summary.json"
+          CURRENT_REPORT="$SUMMARY_FILE"
+  
+          mv "$CURRENT_REPORT" "$BASELINE_REPORT"
+          git add "$BASELINE_REPORT" findings.json
           git commit -m "Update findings and report summaries [skip ci]" || echo "No changes to commit"
           git push
           echo "::error::Pipeline failed due to new issues."
