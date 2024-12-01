@@ -75,6 +75,9 @@ jobs:
             # Wait 30 seconds before checking again
             sleep 30
           done
+          
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       # Step 9: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
@@ -107,7 +110,8 @@ jobs:
           echo "Categories: ${scan_findings_categories}"
           echo "Count: ${scan_findings_count}"
 
-          summary_file="report-summary-${scan_uid}.json"
+          # summary_file="report-summary-${scan_uid}.json"
+          summary_file="$GITHUB_WORKSPACE/report-summary-${scan_uid}.json"
           echo "{
             \"scan_name\": \"${scan_name}\",
             \"scan_uid\": \"${scan_uid}\",
@@ -127,28 +131,27 @@ jobs:
           # echo "Updated Finding Link: $updated_link"
       
           # Use the updated link to download the findings
-          mc cp local/securecodebox/scan-${scan_uid}/findings.json findings.json
+          # mc cp local/securecodebox/scan-${scan_uid}/findings.json findings.json
+          mc cp local/securecodebox/scan-${scan_uid}/findings.json $GITHUB_WORKSPACE/findings.json
 
-      - name: Upload findings.json and report-summary artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: findings-and-reports
-          path: |
-            findings.json
-            report-summary-*.json
-            
-      - name: Checkout repository
-        uses: actions/checkout@v3
+
+      # - name: Upload findings.json and report-summary artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: findings-and-reports
+      #     path: |
+      #       findings.json
+      #       report-summary-*.json
 
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Move files to repo root
-        run: |
-          mv findings.json $GITHUB_WORKSPACE/
-          mv report-summary-*.json $GITHUB_WORKSPACE/
+      # - name: Move files to repo root
+      #   run: |
+      #     mv findings.json $GITHUB_WORKSPACE/
+      #     mv report-summary-*.json $GITHUB_WORKSPACE/
 
       - name: Debug file paths
         run: ls -al $GITHUB_WORKSPACE/
