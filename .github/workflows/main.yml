@@ -9,6 +9,13 @@ on:
 jobs:
   penetration-tests:
     runs-on: ubuntu-latest
+    env:
+      TARGET_APP: juice-shop
+      TARGET_APP_HELM: oci://ghcr.io/securecodebox/helm/juice-shop
+      SCANNER: zap-advanced
+      SCANNER_HELM: oci://ghcr.io/securecodebox/helm/zap-advanced
+      SCAN_NAME: zap-authenticated-full-scan-juiceshop
+      
     steps:
       # Step 1: Set up Kubernetes Kind cluster
       - name: Set up kind cluster
@@ -36,12 +43,12 @@ jobs:
     # Step 5: Deploy Juice-Shop demo target
       - name: Deploy Juice-Shop Demo Target
         run: |
-          helm upgrade --install juice-shop oci://ghcr.io/securecodebox/helm/juice-shop 
+          helm upgrade --install $TARGET_APP $TARGET_APP_HELM
 
       # Step 6: Deploy ZAP-Advanced scanner
       - name: Deploy ZAP-Advanced Scanner
         run: |
-          helm upgrade --install zap-advanced oci://ghcr.io/securecodebox/helm/zap-advanced 
+          helm upgrade --install $SCANNER $SCANNER_HELM
 
       # Step 7: Initiate ZAP Scan on the Juice-Shop target
       - name: Download scan.yaml
@@ -54,14 +61,10 @@ jobs:
       # Step 8: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
         run: |
-          # Start watch mode for kubectl get scan
-          #kubectl get scan zap-authenticated-full-scan-juiceshop -o wide --watch &
-          #kubectl wait --for=condition=Done scan/zap-authenticated-full-scan-juiceshop --timeout=1800s
-          # Continuously check scan status and print it
           # Poll for the scan state to become "Done"
           while true; do
             # Fetch the scan status and check for "Done" state
-            scan_state=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.state}')
+            scan_state=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.status.state}')
       
             # Print the current scan state for debugging
             echo "Current scan state: $scan_state"
@@ -96,14 +99,14 @@ jobs:
 
           mc alias set local http://localhost:9000 admin password
 
-          scan_uid=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.uid}')
+          scan_uid=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.metadata.uid}')
           # echo "SCAN_UID=${scan_uid}" >> $GITHUB_ENV
           
-          scan_name=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.metadata.name}')
-          scan_findings_categories=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.categories}')
+          scan_name=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.metadata.name}')
+          scan_findings_categories=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.status.findings.categories}')
           scan_findings_categories=$(echo "$scan_findings_categories" | tr -d '\n')
 
-          scan_findings_count=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.count}')
+          scan_findings_count=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.status.findings.count}')
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
           scan_findings_count=${scan_findings_count:-0} # Default to 0 if empty
           scan_findings_count=0
