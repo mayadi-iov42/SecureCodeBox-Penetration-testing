@@ -179,7 +179,7 @@ jobs:
               if [[ "$CURRENT_COUNT" -gt "$BASELINE_COUNT" ]]; then
                 echo "::warning::Category '$category' count increased from $BASELINE_COUNT to $CURRENT_COUNT."
               elif [[ "$CURRENT_COUNT" -lt "$BASELINE_COUNT" ]]; then
-                echo "Category '$category' count decreased from $BASELINE_COUNT to $CURRENT_COUNT. Improvement noted."
+                echo "::warning::Category '$category' count decreased from $BASELINE_COUNT to $CURRENT_COUNT. Improvement noted. Issue Still persists"
               else
                 echo "::warning::Category '$category' count remains the same: $CURRENT_COUNT. Persistent issue."
               fi
