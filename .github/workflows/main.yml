@@ -181,7 +181,7 @@ jobs:
               elif [[ "$CURRENT_COUNT" -lt "$BASELINE_COUNT" ]]; then
                 echo "Category '$category' count decreased from $BASELINE_COUNT to $CURRENT_COUNT. Improvement noted."
               else
-                echo "Category '$category' count remains the same: $CURRENT_COUNT. Persistent issue."
+                echo "::warning::Category '$category' count remains the same: $CURRENT_COUNT. Persistent issue."
               fi
             fi
           done
@@ -189,19 +189,10 @@ jobs:
           # Loop through baseline categories
           echo "$BASELINE_CATEGORIES" | while IFS= read -r baseline_category; do
             if ! echo "$CURRENT_CATEGORIES" | grep -Fxq "$baseline_category"; then
-              echo "Category '$baseline_category' is no longer present. Improvement noted."
+              echo "::notice::Category '$baseline_category' is no longer present. Improvement noted."
             fi
           done
 
-      
-
-      # - name: Move files to repo root
-      #   run: |
-      #     mv findings.json $GITHUB_WORKSPACE/
-      #     mv report-summary-*.json $GITHUB_WORKSPACE/
-
-      - name: Debug file paths
-        run: ls -al $GITHUB_WORKSPACE/
 
       - name: Save Reports and Fail Pipeline
         run: |
@@ -212,7 +203,7 @@ jobs:
           git add "$BASELINE_REPORT" findings.json
           git commit -m "Update findings and report summaries [skip ci]" || echo "No changes to commit"
           git push
-          echo "::error::Pipeline failed due to new issues."
+          echo "::error::Pipeline failed due to security issues."
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
