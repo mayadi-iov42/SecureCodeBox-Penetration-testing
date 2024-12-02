@@ -75,14 +75,16 @@ jobs:
             # Wait 30 seconds before checking again
             sleep 30
           done
-
+          
+      # Step 9: install jq
       - name: Install jq
         run: sudo apt-get install -y jq
-          
+
+      # Step 10: checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 9: Retrieve and save the ZAP scan results
+      # Step 11: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
         run: |
           kubectl port-forward -n securecodebox-system service/securecodebox-operator-minio 9000:9000 &
@@ -105,6 +107,8 @@ jobs:
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
           scan_findings_count=${scan_findings_count:-0} # Default to 0 if empty
           scan_findings_count=0
+          echo "Scan findings count: $scan_findings_count"
+          echo "SCAN_FINDINGS_COUNT=$scan_findings_count" >> $GITHUB_ENV
 
           echo "Categories: ${scan_findings_categories}"
           echo "Count: ${scan_findings_count}"
@@ -130,14 +134,17 @@ jobs:
           mc cp local/securecodebox/scan-${scan_uid}/findings.json $GITHUB_WORKSPACE/findings.json
           
           echo "Reports saved locally."
-          
+
+      # Step 12: configure the user that will commit the reports in the repo  
       - name: Configure Git
+        if: env.SCAN_FINDINGS_COUNT != '0' # Ensures this step is skipped if count is 0
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Step 2: Retrieve the Baseline Report
+      # Step 13: Retrieve the Baseline Report
       - name: Retrieve Baseline Report
+        if: env.SCAN_FINDINGS_COUNT != '0' # Ensures this step is skipped if count is 0
         run: |
           BASELINE_DIR="$GITHUB_WORKSPACE/baseline"
           mkdir -p "$BASELINE_DIR"
@@ -156,8 +163,9 @@ jobs:
           fi
           echo "Baseline report located at: $BASELINE_REPORT"
 
-      # Step 3: Check for Baseline and Compare Reports
+      # Step 14: Check for Baseline and Compare Reports
       - name: Check Baseline and Compare
+        if: env.SCAN_FINDINGS_COUNT != '0' # Ensures this step is skipped if count is 0
         run: |
           BASELINE_REPORT="$GITHUB_WORKSPACE/baseline/report-summary.json"
           CURRENT_REPORT="$SUMMARY_FILE"
@@ -195,8 +203,9 @@ jobs:
             fi
           done
 
-
+      # Step 15: save the reports in the repo and fail the pipeline
       - name: Save Reports and Fail Pipeline
+        if: env.SCAN_FINDINGS_COUNT != '0' # Ensures this step is skipped if count is 0
         run: |
           BASELINE_REPORT="$GITHUB_WORKSPACE/baseline/report-summary.json"
           CURRENT_REPORT="$SUMMARY_FILE"
