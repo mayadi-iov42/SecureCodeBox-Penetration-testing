@@ -109,7 +109,7 @@ jobs:
           scan_findings_count=$(kubectl get scan "$SCAN_NAME" -o=jsonpath='{.status.findings.count}')
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
           scan_findings_count=${scan_findings_count:-0} # Default to 0 if empty
-          scan_findings_count=0
+          
           echo "Scan findings count: $scan_findings_count"
           echo "SCAN_FINDINGS_COUNT=$scan_findings_count" >> $GITHUB_ENV
 
