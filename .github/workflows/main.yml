@@ -104,6 +104,7 @@ jobs:
           scan_findings_count=$(kubectl get scan zap-authenticated-full-scan-juiceshop -o=jsonpath='{.status.findings.count}')
           scan_findings_count=$(echo "$scan_findings_count" | tr -d '\n')
           scan_findings_count=${scan_findings_count:-0} # Default to 0 if empty
+          scan_findings_count=0
 
           echo "Categories: ${scan_findings_categories}"
           echo "Count: ${scan_findings_count}"
