@@ -1,6 +1,6 @@
 {
   "scan_name": "zap-authenticated-full-scan-juiceshop",
-  "scan_uid": "48388b7d-81b3-4a06-9778-9389ceeb5f9c",
+  "scan_uid": "35ecb03c-708c-4b4b-b5ca-db068213f8bf",
   "findings": {
     "count": 12,
     "categories": {"Authentication Request Identified":1,"Cloud Metadata Potentially Exposed":1,"Content Security Policy (CSP) Header Not Set":1,"Cross-Domain JavaScript Source File Inclusion":1,"Cross-Domain Misconfiguration":1,"Information Disclosure - Suspicious Comments":1,"Modern Web Application":1,"Private IP Disclosure":1,"SQL Injection - SQLite":1,"Session Management Response Identified":1,"Timestamp Disclosure - Unix":1,"User Agent Fuzzer":1}
