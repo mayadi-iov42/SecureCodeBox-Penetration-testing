@@ -28,37 +28,37 @@ jobs:
         uses: azure/setup-kubectl@v3
         with:
           version: v1.27.1
+          
+      # Step 3: checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # Step 3: Install Helm for SecureCodeBox operator installation
+      # Step 4: Install Helm for SecureCodeBox operator installation
       - name: Install Helm
         uses: azure/setup-helm@v1
         with:
           version: v3.8.0
 
-      # Step 4: Deploy SecureCodeBox Operator using Helm from the OCI registry
+      # Step 5: Deploy SecureCodeBox Operator using Helm from the OCI registry
       - name: Deploy SecureCodeBox
         run: |
           helm --namespace securecodebox-system upgrade --install --create-namespace securecodebox-operator oci://ghcr.io/securecodebox/helm/operator
 
-    # Step 5: Deploy Juice-Shop demo target
+    # Step 6: Deploy Juice-Shop demo target
       - name: Deploy Juice-Shop Demo Target
         run: |
           helm upgrade --install $TARGET_APP $TARGET_APP_HELM
 
-      # Step 6: Deploy ZAP-Advanced scanner
+      # Step 7: Deploy ZAP-Advanced scanner
       - name: Deploy ZAP-Advanced Scanner
         run: |
           helm upgrade --install $SCANNER $SCANNER_HELM
 
-      # Step 7: Initiate ZAP Scan on the Juice-Shop target
-      - name: Download scan.yaml
-        run: |
-          curl -O https://raw.githubusercontent.com/GHARBIyasmine/SecureCodeBox-Penetration-testing/main/scan.yaml
-
+      # Step 8: Initiate ZAP Scan on the Juice-Shop target
       - name: Apply scan.yaml
-        run: kubectl apply -f scan.yaml
+        run: kubectl apply -f ./scan.yaml
 
-      # Step 8: Wait for ZAP Scan Completion
+      # Step 9: Wait for ZAP Scan Completion
       - name: Wait for ZAP Scan Results
         run: |
           # Poll for the scan state to become "Done"
@@ -79,13 +79,11 @@ jobs:
             sleep 30
           done
           
-      # Step 9: install jq
+      # Step 10: install jq
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      # Step 10: checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      
 
       # Step 11: Retrieve and save the ZAP scan results
       - name: Retrieve ZAP Scan Results
