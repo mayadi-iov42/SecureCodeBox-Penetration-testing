@@ -50,8 +50,8 @@ The workflow uses the following environment variables:
 ## Usage
 1. Clone this repository:
    ```bash
-   git clone https://github.com/<your-username>/<your-repo>.git
-   cd <your-repo>
+   git clone https://github.com/GHARBIyasmine/SecureCodeBox-Penetration-testing.git
+   cd SecureCodeBox-Penetration-testing
 
 2. Push changes to the `main` branch to trigger the pipeline:
    ```bash
