@@ -10,8 +10,8 @@ jobs:
   penetration-tests:
     runs-on: ubuntu-latest
     env:
-      TARGET_APP: juice-shop
-      TARGET_APP_HELM: oci://ghcr.io/securecodebox/helm/juice-shop
+      TARGET_APP: onlineboutique
+      TARGET_APP_HELM: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
       SCANNER: zap-advanced
       SCANNER_HELM: oci://ghcr.io/securecodebox/helm/zap-advanced
       SCAN_NAME: zap-authenticated-full-scan-juiceshop
@@ -48,6 +48,7 @@ jobs:
       - name: Deploy Juice-Shop Demo Target
         run: |
           helm upgrade --install $TARGET_APP $TARGET_APP_HELM
+          kubectl get svc 
 
       # Step 7: Deploy ZAP-Advanced scanner
       - name: Deploy ZAP-Advanced Scanner
