@@ -50,7 +50,7 @@ data:
 apiVersion: "execution.securecodebox.io/v1"
 kind: Scan
 metadata:
-  name: "zap-authenticated-full-scan-onlineboutique"
+  name: "zap-unauthenticated-full-scan-onlineboutique"
   labels:
     organization: "googlecloud"
 spec:

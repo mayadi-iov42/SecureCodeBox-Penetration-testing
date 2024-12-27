@@ -14,7 +14,7 @@ jobs:
       TARGET_APP_HELM: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
       SCANNER: zap-advanced
       SCANNER_HELM: oci://ghcr.io/securecodebox/helm/zap-advanced
-      SCAN_NAME: zap-authenticated-full-scan-juiceshop
+      SCAN_NAME: zap-unauthenticated-full-scan-onlineboutique
       
     steps:
       # Step 1: Set up Kubernetes Kind cluster
