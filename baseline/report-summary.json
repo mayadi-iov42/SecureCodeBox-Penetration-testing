@@ -1,8 +1,8 @@
 {
-  "scan_name": "zap-authenticated-full-scan-juiceshop",
-  "scan_uid": "d6c243c6-2142-49ef-961f-12d4ca50bc87",
+  "scan_name": "zap-unauthenticated-full-scan-onlineboutique",
+  "scan_uid": "257c64a6-8e9f-4088-ae52-4713c548ba10",
   "findings": {
-    "count": 12,
-    "categories": {"Authentication Request Identified":1,"Cloud Metadata Potentially Exposed":1,"Content Security Policy (CSP) Header Not Set":1,"Cross-Domain JavaScript Source File Inclusion":1,"Cross-Domain Misconfiguration":1,"Information Disclosure - Suspicious Comments":1,"Modern Web Application":1,"Private IP Disclosure":1,"SQL Injection - SQLite":1,"Session Management Response Identified":1,"Timestamp Disclosure - Unix":1,"User Agent Fuzzer":1}
+    "count": 7,
+    "categories": {"Content Security Policy (CSP) Header Not Set":1,"Cookie No HttpOnly Flag":1,"Cookie without SameSite Attribute":1,"Missing Anti-clickjacking Header":1,"Session Management Response Identified":1,"User Agent Fuzzer":1,"X-Content-Type-Options Header Missing":1}
   }
 }
